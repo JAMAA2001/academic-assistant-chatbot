@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 from groq import Groq
 from datetime import datetime
 import torch
-import os  # <-- ajouté
+import os  # <-- ajouté.\venv\Scripts\activate
 
 # ===============================
 # Charger les données et le modèle
@@ -19,7 +19,12 @@ with open("all_chunks_text.json", "r", encoding="utf-8") as f:
 index = faiss.read_index("academic_faiss1.index")
 embedder = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
 api_key = os.getenv("GROQ_API_KEY")  # <-- lire la clé depuis l'environnement
-
+if not api_key:
+    st.error(
+        "❌ GROQ_API_KEY n'est pas définie.\n"
+        "👉 Ajoutez-la dans les variables d'environnement ou dans les secrets Streamlit."
+    )
+    st.stop()
 # ===============================
 # Fonctions RAG
 # ===============================
@@ -81,11 +86,20 @@ def generate_rag_response(query, api_key):
     client = Groq(api_key=api_key)
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
-        temperature=0.3,
+        temperature=0.2,
         messages=[
-            {"role": "system", "content": "Tu es un assistant universitaire. Réponds en français uniquement."},
-            {"role": "user", "content": prompt}
-        ]
+            {
+                "role": "system",
+                "content": (
+                    "Tu es un assistant universitaire. Réponds en français uniquement.\n"
+                    "Règles:\n"
+                    "- Ne dis pas 'il semble'. Sois direct.\n"
+                    "- Si l'info n'existe pas dans le contexte, dis: 'Je n'ai pas trouvé dans les documents.'\n"
+                    "- Réponds avec des listes claires quand c'est une liste de modules."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
     )
     return response.choices[0].message.content.strip()
 
