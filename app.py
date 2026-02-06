@@ -17,7 +17,7 @@ with open("all_chunks_text.json", "r", encoding="utf-8") as f:
     all_chunks = json.load(f)
 
 index = faiss.read_index("academic_faiss1.index")
-embedder = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+embedder =SentenceTransformer("BAAI/bge-base-en-v1.5",device="cpu")
 api_key = os.getenv("GROQ_API_KEY")  # <-- lire la clé depuis l'environnement
 if not api_key:
     st.error(
