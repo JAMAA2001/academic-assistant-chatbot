@@ -1,0 +1,13 @@
+# ملفات Python اللي ما مهمّاش
+__pycache__/
+*.pyc
+
+# virtual environment
+venv/
+.venv/
+
+# ملف الأسرار (API KEY)
+.env
+
+# ملفات النظام
+.DS_Store
