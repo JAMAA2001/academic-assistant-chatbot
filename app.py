@@ -28,7 +28,7 @@ if not api_key:
 # ===============================
 # Fonctions RAG
 # ===============================
-def semantic_search_simple(query, embedder, index, all_chunks, top_k=5, score_threshold=0.3):
+def semantic_search_simple(query, embedder, index, all_chunks, top_k=10, score_threshold=0.3):
     query_embedding = embedder.encode([query], normalize_embeddings=True).astype("float32")
     scores, indices = index.search(query_embedding, top_k)
     results = [
@@ -38,7 +38,7 @@ def semantic_search_simple(query, embedder, index, all_chunks, top_k=5, score_th
     ]
     return results
 
-def bm25_search_simple(query, all_chunks, top_k=5):
+def bm25_search_simple(query, all_chunks, top_k=10):
     def tokenize(text):
         return re.findall(r"\b\w+\b", text.lower())
     tokenized_docs = [tokenize(doc) for doc in all_chunks]
@@ -50,7 +50,7 @@ def bm25_search_simple(query, all_chunks, top_k=5):
         for i in top_indices if scores[i] > 0
     ]
 
-def rrk_simple(bm25_results, semantic_results, top_k=5, k=60, beta=0.2):
+def rrk_simple(bm25_results, semantic_results, top_k=10, k=60, beta=0.5):
     scores_dict = {}
     for rank, r in enumerate(bm25_results):
         scores_dict[r["index"]] = scores_dict.get(r["index"], 0) + beta / (k + rank + 1)
@@ -65,7 +65,7 @@ def rrk_simple(bm25_results, semantic_results, top_k=5, k=60, beta=0.2):
                 break
     return merged_texts, sorted_indices
 
-def test_rrk(query, top_k=8):
+def test_rrk(query, top_k=10):
     bm25_results = bm25_search_simple(query, all_chunks, top_k)
     semantic_results = semantic_search_simple(query, embedder, index, all_chunks, top_k)
     merged_texts, _ = rrk_simple(bm25_results, semantic_results, top_k)
@@ -86,7 +86,7 @@ def generate_rag_response(query, api_key):
     client = Groq(api_key=api_key)
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
-        temperature=0.2,
+        temperature=0.3,
         messages=[
             {
                 "role": "system",
