@@ -50,7 +50,7 @@ def bm25_search_simple(query, all_chunks, top_k=10):
         for i in top_indices if scores[i] > 0
     ]
 
-def rrk_simple(bm25_results, semantic_results, top_k=10, k=60, beta=0.5):
+def rrk_simple(bm25_results, semantic_results, top_k=10, k=60, beta=0.8):
     scores_dict = {}
     for rank, r in enumerate(bm25_results):
         scores_dict[r["index"]] = scores_dict.get(r["index"], 0) + beta / (k + rank + 1)
