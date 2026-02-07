@@ -113,7 +113,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Style (نفس CSS ديالك)
+
 st.markdown("""
 <style>
 .title {
