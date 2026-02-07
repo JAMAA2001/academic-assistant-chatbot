@@ -94,7 +94,6 @@ def generate_rag_response(query, api_key):
                     "Tu es un assistant universitaire. Réponds en français uniquement.\n"
                     "Règles:\n"
                     "- Ne dis pas 'il semble'. Sois direct.\n"
-                    "- Si l'info n'existe pas dans le contexte, dis: 'Je n'ai pas trouvé dans les documents.'\n"
                     "- Réponds avec des listes claires quand c'est une liste de modules."
                 ),
             },
