@@ -65,7 +65,7 @@ def rrk_simple(bm25_results, semantic_results, top_k=10, k=50, beta=0.2):
                 break
     return merged_texts, sorted_indices
 
-def test_rrk(query, top_k=8):
+def test_rrk(query, top_k=5):
     bm25_results = bm25_search_simple(query, all_chunks, top_k)
     semantic_results = semantic_search_simple(query, embedder, index, all_chunks, top_k)
     merged_texts, _ = rrk_simple(bm25_results, semantic_results, top_k)
