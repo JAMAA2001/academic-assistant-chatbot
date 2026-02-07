@@ -8,7 +8,8 @@ from sentence_transformers import SentenceTransformer
 from groq import Groq
 from datetime import datetime
 import torch
-import os  # <-- ajouté.\venv\Scripts\activate
+import os  
+import time
 
 # ===============================
 # Charger les données et le modèle
@@ -103,10 +104,8 @@ def generate_rag_response(query, api_key):
     return response.choices[0].message.content.strip()
 
 # ===============================
-# Interface Streamlit
+# Interface Streamlit (ChatGPT style)
 # ===============================
-import time  # <-- pour mesurer le temps
-
 st.set_page_config(
     page_title="Assistant académique intelligent",
     page_icon="🎓",
@@ -114,7 +113,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ===== Style CSS =====
+# Style (نفس CSS ديالك)
 st.markdown("""
 <style>
 .title {
@@ -144,45 +143,57 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ===== Titre =====
 st.markdown('<div class="title">🎓 Assistant académique intelligent</div>', unsafe_allow_html=True)
-
-# ===== Date et heure =====
 now = datetime.now()
-st.markdown(f"<p style='text-align:center; color: gray;'>Date et heure : {now.strftime('%d/%m/%Y %H:%M:%S')}</p>", unsafe_allow_html=True)
-
-# ===== Inputs utilisateur =====
-user_query = st.text_input("❓ Entrez votre question :")
+st.markdown(
+    f"<p style='text-align:center; color: gray;'>Date et heure : {now.strftime('%d/%m/%Y %H:%M:%S')}</p>",
+    unsafe_allow_html=True
+)
 
 with st.sidebar:
     st.markdown("### 📖 Description")
     st.write("Assistant universitaire intelligent basé sur RAG hybride (BM25 + embeddings FAISS)")
+    if st.button("🧹 Clear chat"):
+        st.session_state.messages = [{"role": "assistant", "content": "Salut 👋 Pose-moi ta question."}]
+        st.rerun()
 
-# ===== Bouton et génération réponse =====
-if st.button("💡 Poser la question"):
-    if not user_query:
-        st.warning("⚠️ Veuillez entrer une question")
-    else:
-        with st.spinner("⏳ Traitement de la question..."):
-            try:
-                start_time = time.time()  # <-- démarrer le chrono
+# Chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "Salut 👋 Pose-moi ta question."}]
 
-                # Lecture du API key depuis l'environnement
-                if not api_key:
-                    st.error("❌ La clé API n'est pas définie dans les variables d'environnement.")
-                else:
-                    answer = generate_rag_response(user_query, api_key)
+# Display messages
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
 
-                    end_time = time.time()  # <-- fin du chrono
-                    elapsed_time = end_time - start_time  # durée en secondes
-                    # Horodatage et temps écoulé
-                    now_answer = datetime.now()
-                    st.markdown(f"<p style='text-align:right; color: gray;'>Réponse générée le : {now_answer.strftime('%d/%m/%Y à %H:%M:%S')} - Temps écoulé : {elapsed_time:.2f} secondes</p>", unsafe_allow_html=True)
+# Input
+user_query = st.chat_input("Écris ta question...")
 
-                    # Carte réponse
-                    st.markdown(f'<div class="card"><strong>✅ Réponse :</strong><br>{answer}</div>', unsafe_allow_html=True)
-                    
-    
+if user_query:
+    st.session_state.messages.append({"role": "user", "content": user_query})
+    with st.chat_message("user"):
+        st.markdown(user_query)
 
-            except Exception as e:
-                st.error(f"❌ Une erreur est survenue : {e}")
+    with st.chat_message("assistant"):
+        placeholder = st.empty()
+        placeholder.markdown("⏳ ...")
+        try:
+            start_time = time.time()
+
+            answer = generate_rag_response(user_query, api_key)
+
+            elapsed_time = time.time() - start_time
+            now_answer = datetime.now()
+
+            placeholder.markdown(answer)
+            st.caption(
+                f"Réponse générée le : {now_answer.strftime('%d/%m/%Y à %H:%M:%S')} "
+                f"- Temps écoulé : {elapsed_time:.2f} secondes"
+            )
+
+            st.session_state.messages.append({"role": "assistant", "content": answer})
+
+        except Exception as e:
+            err = f"❌ Une erreur est survenue : {e}"
+            placeholder.markdown(err)
+            st.session_state.messages.append({"role": "assistant", "content": err})
