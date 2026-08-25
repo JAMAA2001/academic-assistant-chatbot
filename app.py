@@ -86,7 +86,7 @@ def generate_rag_response(query, api_key):
     prompt = chunks_to_bullet_prompt(query, chunks)
     client = Groq(api_key=api_key)
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="llama-3.3-70b-versatile",
         temperature=0.3,
         messages=[
             {
@@ -104,7 +104,7 @@ def generate_rag_response(query, api_key):
     return response.choices[0].message.content.strip()
 
 # ===============================
-# Interface Streamlit (ChatGPT style)
+# Interface Streamlit
 # ===============================
 st.set_page_config(
     page_title="Assistant académique intelligent",
