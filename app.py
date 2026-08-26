@@ -81,6 +81,23 @@ Utilise uniquement les informations suivantes :
 {bullets}
 """
 
+def is_greeting(query):
+    greetings = {
+        "hi",
+        "hello",
+        "hey",
+        "bonjour",
+        "salut",
+        "bonsoir",
+        "good morning",
+        "good afternoon",
+        "good evening"
+    }
+
+    normalized_query = query.lower().strip()
+
+    return normalized_query in greetings
+
 def generate_rag_response(query, api_key):
     chunks = test_rrk(query)
     prompt = chunks_to_bullet_prompt(query, chunks)
@@ -170,30 +187,54 @@ for m in st.session_state.messages:
 user_query = st.chat_input("Écris ta question...")
 
 if user_query:
-    st.session_state.messages.append({"role": "user", "content": user_query})
+    st.session_state.messages.append({
+        "role": "user",
+        "content": user_query
+    })
+
     with st.chat_message("user"):
         st.markdown(user_query)
 
     with st.chat_message("assistant"):
         placeholder = st.empty()
-        placeholder.markdown("⏳ ...")
+
         try:
             start_time = time.time()
 
-            answer = generate_rag_response(user_query, api_key)
+            # ===============================
+            # Greeting → no RAG
+            # ===============================
+            if is_greeting(user_query):
+                answer = "Bonjour 👋 Comment puis-je vous aider ?"
+
+            # ===============================
+            # Academic question → RAG
+            # ===============================
+            else:
+                placeholder.markdown("⏳ Recherche dans les documents...")
+                answer = generate_rag_response(user_query, api_key)
 
             elapsed_time = time.time() - start_time
             now_answer = datetime.now()
 
             placeholder.markdown(answer)
+
             st.caption(
-                f"Réponse générée le : {now_answer.strftime('%d/%m/%Y à %H:%M:%S')} "
+                f"Réponse générée le : "
+                f"{now_answer.strftime('%d/%m/%Y à %H:%M:%S')} "
                 f"- Temps écoulé : {elapsed_time:.2f} secondes"
             )
 
-            st.session_state.messages.append({"role": "assistant", "content": answer})
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": answer
+            })
 
         except Exception as e:
             err = f"❌ Une erreur est survenue : {e}"
             placeholder.markdown(err)
-            st.session_state.messages.append({"role": "assistant", "content": err})
+
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": err
+            })
