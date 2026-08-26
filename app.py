@@ -168,9 +168,23 @@ st.markdown(
 )
 
 with st.sidebar:
-    st.markdown("### 📖 Description")
-    st.write("Assistant universitaire intelligent basé sur RAG hybride (BM25 + embeddings FAISS)")
-    if st.button("🧹 Clear chat"):
+    st.markdown("### 📖 À propos")
+    st.write(
+        "Cet assistant académique intelligent est conçu pour répondre à toutes vos "
+        "questions sur la **FST de Marrakech**."
+    )
+    
+    st.markdown("**💡 Ce que vous pouvez demander :**")
+    st.markdown("""
+    - 🎓 **Formations :** Licences, Masters, Cycles d'Ingénieurs.
+    - 📚 **Modules :** Liste des matières et détails des semestres.
+    - 💰 **Bourse d'études :** Conditions ONOUSC, montants et critères.
+    - 📋 **Admission :** Conditions d'accès et prérequis.
+    - 📞 **Contacts & Infos :** Chefs de départements, horaires...
+    """)
+    
+    st.markdown("---")
+    if st.button("🧹 Clear chat", use_container_width=True):
         st.session_state.messages = [{"role": "assistant", "content": "Salut 👋 Pose-moi ta question."}]
         st.rerun()
 
